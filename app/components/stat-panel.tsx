@@ -6,6 +6,8 @@ import {
     NeedConfig
   } from '../definitions';
 import ProgressBar from './progress-bar';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faGear, faCheck, faBars } from '@fortawesome/free-solid-svg-icons'
 
 function ENTRIES_KEY(id: string): string { return id + ".entries"; }
 
@@ -64,12 +66,30 @@ export default function StatPanel(props: StatPanelProps) {
         }
     }, [ lastEntryTime ]);
 
+    function FrequencyString(): string {
+        const amount: number = props.config.frequency.amount;
+        return `Every ${amount} ${props.config.frequency.unit}${amount == 1 ? '' : 's'}`
+    }
+
     return (
-        <div className="panel">
-            <h3>{props.config.name}</h3>
-            <ProgressBar {...progressData}/>
-            <button type="button" onClick={OnDone}>Done!</button>
-            <button type="button" onClick={() => props.onDelete(props.config)}>Delete</button>
+        <div className="stat-panel-root">
+            <script src="https://kit.fontawesome.com/a7a8b1c1b0.js" crossOrigin="anonymous"></script>
+            <div className="stat-panel-handle">
+                <FontAwesomeIcon icon={faBars} size="xl"/>
+            </div>
+            <div className="stat-panel-info-container">
+                <div className="stat-panel-info-text">
+                    <h1 className='stat-panel-info-header'>{props.config.name}</h1>
+                    <h1 className='stat-panel-info-frequency'>{FrequencyString()}</h1>
+                </div>
+                <ProgressBar {...progressData}/>
+            </div>
+            <button className="stat-panel-button" type="button" onClick={() => props.onDelete(props.config)}>
+                <FontAwesomeIcon icon={faGear} size="xl"/>
+            </button>
+            <button className="stat-panel-button" type="button" onClick={OnDone}>
+                <FontAwesomeIcon icon={faCheck} size="xl" style={{color: "#63E6BE"}}/>
+            </button>
         </div>
     );
 }

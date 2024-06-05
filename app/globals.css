@@ -31,3 +31,79 @@ body {
     text-wrap: balance;
   }
 }
+
+.stat-panel-root {
+  box-sizing: border-box;
+  padding: 5px;
+  border-style: solid;
+  border-width: 2px;
+  border-radius: 25px;
+  display: flex;
+}
+
+.stat-panel-handle {
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stat-panel-info-container {
+  width: 100%;
+  min-width: 0;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+}
+
+.stat-panel-info-text {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 5px;
+}
+
+.stat-panel-button {
+  min-width: 50px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.progress-bar-grid {
+  display: grid;
+  grid-template-columns: auto;
+  align-items: center;
+  height: 100%;
+}
+
+.progress-bar-bg {
+  grid-row: 1;
+  grid-column: 1;
+  text-align: center;
+  height: 100%;
+  width: 100%;
+  border-radius: 50vh;
+}
+
+.progress-bar-fg-container {
+  grid-row: 1;
+  grid-column: 1;
+  border-radius: 50vh;
+  height: 100%;
+  overflow: hidden;
+}
+
+.progress-bar-fg {
+  min-height: 100%;
+  width: 100%;
+  min-width: 100px;
+  border-radius: 50vh;
+}
+
+.progress-bar-text {
+  grid-row: 1;
+  grid-column: 1;
+  margin-left: auto;
+  margin-right: auto;
+  color: white;
+}

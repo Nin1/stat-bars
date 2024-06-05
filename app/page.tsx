@@ -90,7 +90,7 @@ export default function StatsRoot() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main>
       <ul>
         {configs.map((config) => (
           <li key={config.uuid}><StatPanel config={config} onDelete={DeleteConfig}/></li>

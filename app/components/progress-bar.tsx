@@ -38,7 +38,7 @@ function GetGreenFromT(t: number): number {
     return Math.min(Math.max(g, 0), 255)
 }
 
-// r=0 below t=0.5, then linearly to r=1 at t=1
+// r=255 above t=0.5, then linearly to r=0 at t=0
 function GetRedFromT(t: number): number {
     let r: number = ((t - 0.5) * 2) * 255;
     return Math.min(Math.max(r, 0), 255)
@@ -119,7 +119,7 @@ export default function ProgressBar(progress: ProgressData) {
                         }}>
                     </div>
                 </div>
-                <text className="progress-bar-text">{GetOverlayText()}</text>
+                <h3 className="progress-bar-text">{GetOverlayText()}</h3>
             </div>
         </div>
     );

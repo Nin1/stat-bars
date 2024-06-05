@@ -8,6 +8,8 @@ import {
 import ProgressBar from './progress-bar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGear, faCheck, faBars } from '@fortawesome/free-solid-svg-icons'
+import { DraggableProvidedDragHandleProps, DraggableProvidedDraggableProps } from '@hello-pangea/dnd';
+import { Prosto_One } from 'next/font/google';
 
 function ENTRIES_KEY(id: string): string { return id + ".entries"; }
 
@@ -39,6 +41,7 @@ function LoadEntries(id: string): Date[] {
 type StatPanelProps = {
     config: NeedConfig,
     onDelete: Function,
+    dragHandleProps: DraggableProvidedDragHandleProps | null
 }
 
 export default function StatPanel(props: StatPanelProps) {
@@ -73,8 +76,7 @@ export default function StatPanel(props: StatPanelProps) {
 
     return (
         <div className="stat-panel-root">
-            <script src="https://kit.fontawesome.com/a7a8b1c1b0.js" crossOrigin="anonymous"></script>
-            <div className="stat-panel-handle">
+            <div className="stat-panel-handle" {...props.dragHandleProps}>
                 <FontAwesomeIcon icon={faBars} size="xl"/>
             </div>
             <div className="stat-panel-info-container">

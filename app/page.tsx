@@ -5,6 +5,7 @@ import { Frequency, NeedConfig, NeedData } from "./definitions";
 import StatPanel from "./components/stat-panel";
 import { SetStateAction, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import StatList from "./components/stat-list";
 
 function CONFIG_KEY(id: string): string { return id + ".config"; }
 function ENTRIES_KEY(id: string): string { return id + ".entries"; }
@@ -89,15 +90,50 @@ export default function StatsRoot() {
     setNewName(event.target.value);
   }
 
+  function NameIsValid(): boolean {
+    return newName.length > 0 && !needIDs.includes(newName);
+  }
+
+  const HandleReorder = async (result: any) => {
+    if (result.destination === null) return;
+    const sourceIndex = configs.findIndex(
+        (config) => config.uuid === result.draggableId
+    );
+    const destinationIndex = result.destination.index;
+
+    // Shift arrays
+    const newIdList = [...needIDs];
+    const newConfigs = [...configs];
+    if (sourceIndex < destinationIndex)
+    {
+      for (let i = sourceIndex; i < destinationIndex; i++)
+      {
+        newIdList[i] = needIDs[i + 1];
+        newConfigs[i] = configs[i + 1];
+      }
+    }
+    else if (sourceIndex > destinationIndex)
+    {
+      for (let i = sourceIndex; i > destinationIndex; i--)
+      {
+        newIdList[i] = needIDs[i - 1];
+        newConfigs[i] = configs[i - 1];
+      }
+    }
+    newIdList[destinationIndex] = needIDs[sourceIndex];
+    newConfigs[destinationIndex] = configs[sourceIndex];
+
+    // Set arrays
+    needIDs = newIdList;
+    localStorage.setItem("needIDs", JSON.stringify(needIDs));
+    setNeedData(newConfigs);
+  }
+
   return (
     <main>
-      <ul>
-        {configs.map((config) => (
-          <li key={config.uuid}><StatPanel config={config} onDelete={DeleteConfig}/></li>
-        ))}
-      </ul>
+      <StatList configs={configs} onDelete={DeleteConfig} onReorder={HandleReorder}/>
       <input type="text" value={newName} onChange={HandleNewNameField}/>
-      <button type="button" onClick={AddNewConfig}>Add New</button>
+      <button type="button" onClick={AddNewConfig} disabled={!NameIsValid()}>Add New</button>
       <button type="button" onClick={ResetAllData}>Reset All</button>
     </main>
   );

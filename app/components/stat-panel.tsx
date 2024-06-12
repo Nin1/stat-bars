@@ -40,7 +40,7 @@ function LoadEntries(id: string): Date[] {
 
 type StatPanelProps = {
     config: NeedConfig,
-    onDelete: Function,
+    onEdit: (config : NeedConfig) => void,
     dragHandleProps: DraggableProvidedDragHandleProps | null
 }
 
@@ -86,7 +86,7 @@ export default function StatPanel(props: StatPanelProps) {
                 </div>
                 <ProgressBar {...progressData}/>
             </div>
-            <button className="stat-panel-button" type="button" onClick={() => props.onDelete(props.config)}>
+            <button className="stat-panel-button" type="button" onClick={() => props.onEdit(props.config)}>
                 <FontAwesomeIcon icon={faGear} size="xl"/>
             </button>
             <button className="stat-panel-button" type="button" onClick={OnDone}>

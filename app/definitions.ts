@@ -18,6 +18,11 @@ export type NeedConfig = {
     frequency: Frequency;
 }
 
+export type NeedConfigDef = {
+    name: string;
+    frequency: Frequency;
+}
+
 export type Frequency = {
     amount: number;
     unit: "minute" | "hour" | "day" | "week" | "month";

@@ -5,7 +5,7 @@ import { useOptimistic } from "react";
 
 type StatListProps = {
     configs: NeedConfig[],
-    onDelete: Function,
+    onEdit: (config : NeedConfig) => void,
     onReorder: OnDragEndResponder
 }
 
@@ -30,7 +30,7 @@ export default function StatList(props: StatListProps) {
                                         <li ref={provider.innerRef} {...provider.draggableProps}>
                                             <StatPanel
                                                 config={config}
-                                                onDelete={props.onDelete}
+                                                onEdit={props.onEdit}
                                                 dragHandleProps={provider.dragHandleProps}
                                                 />
                                         </li>

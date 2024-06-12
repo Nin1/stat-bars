@@ -70,6 +70,7 @@ function MsToTimeString(ms: number): string {
 export default function ProgressBar(progress: ProgressData) {
     const [t, setT] = useState(0);
     const [overflow, setOverflow] = useState(0);
+
     function RefreshProgress() {
         let currentDate = new Date();
 
@@ -88,10 +89,9 @@ export default function ProgressBar(progress: ProgressData) {
 
     // Update bar every 1000ms
     useEffect(() => {
-        RefreshProgress();
         const interval = setInterval(RefreshProgress, 1000);
         return () => { clearInterval(interval); }
-    });
+    }, [t, overflow]);
 
     function GetOverlayText() {
         if (overflow > 0) {

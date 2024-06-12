@@ -1,11 +1,12 @@
 'use client'
 
 import Image from "next/image";
-import { Frequency, NeedConfig, NeedData } from "./definitions";
+import { Frequency, NeedConfig, NeedConfigDef, NeedData } from "./definitions";
 import StatPanel from "./components/stat-panel";
 import { SetStateAction, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import StatList from "./components/stat-list";
+import StatEditModal from "./components/stat-edit-modal";
 
 function CONFIG_KEY(id: string): string { return id + ".config"; }
 function ENTRIES_KEY(id: string): string { return id + ".entries"; }
@@ -37,7 +38,9 @@ export default function StatsRoot() {
   let needIDs: string[] = LoadNeedIDs();
 
   let [configs, setNeedData] = useState<NeedConfig[]>(LoadConfigs());
-  let [newName, setNewName] = useState("");
+
+  let [isEditing, setIsEditing] = useState(false);
+  let [editingConfig, setEditingConfig] = useState<NeedConfig | null>(null);
 
   // Loads all data for all needs currently present in 'needIDs' 
   function LoadConfigs() {
@@ -65,16 +68,57 @@ export default function StatsRoot() {
     setNeedData(LoadConfigs());
   }
 
-  // Given a new config, add it to the data
-  function AddNewConfig() {
-    const config: NeedConfig = GetDefaultConfig(newName);
+  // Given a new config, add it to the data and refresh
+  function AddNewConfig(newConfig: NeedConfigDef) {
+    if (newConfig.name.length <= 0 || needIDs.includes(newConfig.name)) {
+      // Error: name is invalid
+      return;
+    }
+    let config: NeedConfig = { uuid: uuidv4(), name: newConfig.name, frequency: newConfig.frequency };
     needIDs.push(config.name);
     localStorage.setItem("needIDs", JSON.stringify(needIDs));
     localStorage.setItem(CONFIG_KEY(config.name), JSON.stringify(config));
     const initialEntries: Date[] = [ new Date() ];
     localStorage.setItem(ENTRIES_KEY(config.name), JSON.stringify(initialEntries));
     Reload();
-    setNewName('');
+  }
+
+  // Sets the new config in the list.
+  // If oldConfig is not null, the new config will overwrite it.
+  // Otherwise, the new config will be added as a new entry in the list.
+  function SetConfig(oldConfig: NeedConfig | null, newConfig: NeedConfigDef) {
+    if (oldConfig == null) {
+      AddNewConfig(newConfig);
+    }
+    else {
+      // Find the old config just to make sure we have the latest one
+      const sourceIndex = configs.findIndex((config) => config.uuid === oldConfig.uuid);
+      if (sourceIndex != -1) {
+        const newIdList = [...needIDs];
+        const newConfigs = [...configs];
+
+        // Rename the stored data
+        const oldName = configs[sourceIndex].name;
+        const entriesData = localStorage.getItem(ENTRIES_KEY(oldName));
+        if (entriesData != null) localStorage.setItem(ENTRIES_KEY(newConfig.name), entriesData);
+        localStorage.removeItem(CONFIG_KEY(oldName));
+        localStorage.removeItem(ENTRIES_KEY(oldName));
+
+        // Update the ID
+        newIdList[sourceIndex] = newConfig.name;
+        needIDs = newIdList;
+        localStorage.setItem("needIDs", JSON.stringify(needIDs));
+
+        // Update the config
+        newConfigs[sourceIndex].name = newConfig.name;
+        newConfigs[sourceIndex].frequency = newConfig.frequency;
+        setNeedData(newConfigs);
+      }
+      else {
+        // Error
+      }
+    }
+    setIsEditing(false);
   }
 
   // Deletes the given need from the list
@@ -84,14 +128,17 @@ export default function StatsRoot() {
     needIDs = needIDs.filter(value => value !== config.name);
     localStorage.setItem("needIDs", JSON.stringify(needIDs));
     Reload();
+    setIsEditing(false);
   }
 
-  function HandleNewNameField(event: { target: { value: SetStateAction<string>; }; }) {
-    setNewName(event.target.value);
+  function OpenEditModal(config: NeedConfig) {
+    setEditingConfig(config);
+    setIsEditing(true);
   }
 
-  function NameIsValid(): boolean {
-    return newName.length > 0 && !needIDs.includes(newName);
+  function OpenAddNewModal() {
+    setEditingConfig(null);
+    setIsEditing(true);
   }
 
   const HandleReorder = async (result: any) => {
@@ -131,10 +178,15 @@ export default function StatsRoot() {
 
   return (
     <main>
-      <StatList configs={configs} onDelete={DeleteConfig} onReorder={HandleReorder}/>
-      <input type="text" value={newName} onChange={HandleNewNameField}/>
-      <button type="button" onClick={AddNewConfig} disabled={!NameIsValid()}>Add New</button>
+      <StatList configs={configs} onEdit={OpenEditModal} onReorder={HandleReorder}/>
+      <button type="button" onClick={OpenAddNewModal}>Add New</button>
       <button type="button" onClick={ResetAllData}>Reset All</button>
+      {isEditing && <StatEditModal
+        title={editingConfig == null ? "Add new stat" : "Edit stat"}
+        config={editingConfig}
+        onConfirm={SetConfig}
+        onDelete={DeleteConfig}
+        onCancel={() => setIsEditing(false)}/>}
     </main>
   );
 }

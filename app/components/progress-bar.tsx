@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-    Frequency,
-    ProgressData
+    Frequency
   } from '../definitions';
 
 
@@ -67,29 +66,42 @@ function MsToTimeString(ms: number): string {
     else return days + " days"
 }
 
-export default function ProgressBar(progress: ProgressData) {
+function GetT(start: number, end: number, current: number) : number {
+    end -= start;
+    current -= start;
+    let unboundT: number = current / end;
+
+    return (Math.min(Math.max(unboundT, 0), 1));
+}
+
+function GetOverflow(end: number, current: number): number {
+    return Math.max(0, current - end);
+}
+
+
+export type ProgressBarProps = {
+    startTime: Date,
+    frequency: Frequency,
+}
+
+export default function ProgressBar(progress: ProgressBarProps) {
     const [t, setT] = useState(0);
     const [overflow, setOverflow] = useState(0);
 
     function RefreshProgress() {
-        let currentDate = new Date();
-
         // Calculate 
+        let currentDate = new Date();
         let startMs: number = progress.startTime.getTime();
         let endMs: number = AddFrequencyToDate(progress.frequency, progress.startTime).getTime();
         let currentMs: number = currentDate.getTime();
 
-        endMs -= startMs;
-        currentMs -= startMs;
-        let unboundT: number = currentMs / endMs;
-
-        setT(Math.min(Math.max(unboundT, 0), 1));
-        setOverflow(Math.max(0, currentMs - endMs));
+        setT(GetT(startMs, endMs, currentMs));
+        setOverflow(GetOverflow(endMs, currentMs));
     }
 
-    // Update bar every 1000ms
+    // Update bar every 100ms
     useEffect(() => {
-        const interval = setInterval(RefreshProgress, 1000);
+        const interval = setInterval(RefreshProgress, 100);
         return () => { clearInterval(interval); }
     }, [t, overflow]);
 

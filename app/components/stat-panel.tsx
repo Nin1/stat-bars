@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import {
     NeedData,
     Frequency,
-    ProgressData,
     NeedConfig
   } from '../definitions';
 import ProgressBar from './progress-bar';
@@ -46,28 +45,16 @@ type StatPanelProps = {
 
 export default function StatPanel(props: StatPanelProps) {
     let entries = LoadEntries(props.config.name);
-    let [lastEntryTime, setLastEntryType] = useState(GetLastEntryTime(entries));
 
-    const progressData: ProgressData = {
-        startTime: lastEntryTime,
-        frequency: props.config.frequency
-    }
+    let [startTime, setStartTime] = useState(GetLastEntryTime(entries));
 
     // Runs when 'Done!' is clicked, to add a new date entry and reset the progress bar
     function OnDone() {
         let newDate = new Date();
         entries.push(newDate);
-        setLastEntryType(GetLastEntryTime(entries));
+        setStartTime(newDate);
         localStorage.setItem(ENTRIES_KEY(props.config.name), JSON.stringify(entries));
     }
-
-    useEffect(() => {
-        let newLastEntryTime = GetLastEntryTime(entries);
-        if (lastEntryTime.getTime() != lastEntryTime.getTime())
-        {
-            setLastEntryType(newLastEntryTime);
-        }
-    }, [ lastEntryTime ]);
 
     function FrequencyString(): string {
         const amount: number = props.config.frequency.amount;
@@ -84,7 +71,7 @@ export default function StatPanel(props: StatPanelProps) {
                     <h1 className='stat-panel-info-header'>{props.config.name}</h1>
                     <h1 className='stat-panel-info-frequency'>{FrequencyString()}</h1>
                 </div>
-                <ProgressBar {...progressData}/>
+                <ProgressBar startTime={startTime} frequency={props.config.frequency}/>
             </div>
             <button className="stat-panel-button" type="button" onClick={() => props.onEdit(props.config)}>
                 <FontAwesomeIcon icon={faGear} size="xl"/>

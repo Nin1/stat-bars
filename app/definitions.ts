@@ -1,10 +1,4 @@
 
-
-export type ProgressData = {
-    startTime: Date,
-    frequency: Frequency,
-}
-
 export type NeedData = {
     config: NeedConfig;
     entries: Date[];

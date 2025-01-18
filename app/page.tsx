@@ -27,9 +27,23 @@ function LoadNeedIDs(): string[] {
 // Load config from local storage, or create a new one if it doesn't exist
 function LoadNeedConfig(id: string): NeedConfig {
   const storedConfig: string | null = localStorage.getItem(CONFIG_KEY(id));
-  if (storedConfig != null) return JSON.parse(storedConfig);
-  // Else, create and save a new config for testing
-  let config = GetDefaultConfig(id);
+  let config: NeedConfig;
+  if (storedConfig != null) {
+    try {
+      config = JSON.parse(storedConfig);
+    }
+    catch (err) {
+      config = GetDefaultConfig(id);
+    }
+  }
+  else {
+    config = GetDefaultConfig(id);
+  }
+  if (config.uuid == null) {
+    // In case we have bad data, assign a new UUID
+    config.uuid = uuidv4();
+  }
+  // Write back to local storage in case any data was changed by loading
   localStorage.setItem(CONFIG_KEY(id), JSON.stringify(config));
   return config;
 }
@@ -47,6 +61,7 @@ export default function StatsRoot() {
     let newConfigs: NeedConfig[] = [ ];
     needIDs.forEach(needID => {
       const config: NeedConfig = LoadNeedConfig(needID);
+      console.log('LOAD: %s every %d %s [%s]', config.name, config.frequency.amount, config.frequency.unit, config.uuid);
       newConfigs.push(config);
     });
     return newConfigs;
@@ -75,6 +90,7 @@ export default function StatsRoot() {
       return;
     }
     let config: NeedConfig = { uuid: uuidv4(), name: newConfig.name, frequency: newConfig.frequency };
+    console.log('ADD: %s every %d %s [%s]', config.name, config.frequency.amount, config.frequency.unit, config.uuid);
     needIDs.push(config.name);
     localStorage.setItem("needIDs", JSON.stringify(needIDs));
     localStorage.setItem(CONFIG_KEY(config.name), JSON.stringify(config));
@@ -100,19 +116,20 @@ export default function StatsRoot() {
         // Rename the stored data
         const oldName = configs[sourceIndex].name;
         const entriesData = localStorage.getItem(ENTRIES_KEY(oldName));
-        if (entriesData != null) localStorage.setItem(ENTRIES_KEY(newConfig.name), entriesData);
+        const configData = localStorage.getItem(CONFIG_KEY(oldName));
         localStorage.removeItem(CONFIG_KEY(oldName));
         localStorage.removeItem(ENTRIES_KEY(oldName));
+        if (entriesData != null) localStorage.setItem(ENTRIES_KEY(newConfig.name), entriesData);
+        let config: NeedConfig = { uuid: oldConfig.uuid, name: newConfig.name, frequency: newConfig.frequency };
+        console.log('EDIT: %s every %d %s [%s]', config.name, config.frequency.amount, config.frequency.unit, config.uuid);
+        localStorage.setItem(CONFIG_KEY(newConfig.name), JSON.stringify(config));
 
         // Update the ID
         newIdList[sourceIndex] = newConfig.name;
         needIDs = newIdList;
         localStorage.setItem("needIDs", JSON.stringify(needIDs));
 
-        // Update the config
-        newConfigs[sourceIndex].name = newConfig.name;
-        newConfigs[sourceIndex].frequency = newConfig.frequency;
-        setNeedData(newConfigs);
+        Reload();
       }
       else {
         // Error
